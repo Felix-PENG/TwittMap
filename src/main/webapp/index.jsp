@@ -21,22 +21,44 @@
 		</div>
 		<div id="map" style="width:100%;height:580px;"></div>
 	</div>
-
+	
+	<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
 	<script  type="text/javascript">
+		var myMap;
+		$(document).ready(function(){
+			$("#filterSelect").change(function(){
+				$.post("Keyword",
+				{
+					keyword:$("#filterSelect").val()
+				},
+				function(data){
+					var loc = eval(data);
+					for(var i = 0;i < loc.length;i++){
+						var tweet = loc[i];
+						addMarker(myMap,tweet.longitude,tweet.latitude);
+					}
+				});
+			});
+		});
+		
+		
 		function myMap() {
-			var myCenter = new google.maps.LatLng(51.508742,-0.120850);
+			var myCenter = new google.maps.LatLng(40,-100);
 			var mapCanvas = document.getElementById("map");
 			var mapOptions = {center: myCenter, zoom: 5};
-			var map = new google.maps.Map(mapCanvas, mapOptions);
+			myMap = new google.maps.Map(mapCanvas, mapOptions);	
+			addMarker(myMap,40,-100);	
+		}
+		
+		function addMarker(map,longitude,latitude){
+			var myCenter = new google.maps.LatLng(longitude,latitude);
 			var marker = new google.maps.Marker({
 				position:myCenter,
 			});
-			marker.setMap(map);
+			marker.setMap(myMap);
 		}
 	</script>
 	
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjxHGCl5uN2DPCMVaRttY0BeIaMFV-xM4&callback=myMap"></script>
-	<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
-	<script type="text/javascript" src="js/filter.js"></script>
 </body>
 </html>

@@ -8,4 +8,10 @@
   	<servlet-name>KeywordServlet</servlet-name>
   	<servlet-class>com.cc.twittmap.servlets.KeywordServlet</servlet-class>
   </servlet>
+  <servlet>
+  	<servlet-name>LoadMapServlet</servlet-name>
+  	<display-name>LoadMapServlet</display-name>
+  	<description></description>
+  	<servlet-class>com.cc.twittmap.servlets.LoadMapServlet</servlet-class>
+  </servlet>
 </web-app>
