@@ -9,12 +9,19 @@
 		<div style="background-color: #0666c6;height:50px;line-height: 50px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);">
 			<span style="margin-left: 1%;text-shadow: 2px 2px 10px black;font-size: 5vh;color:white">TwittMap</span>
 			<span style="display: inline-block;float: right;margin-right: 1%;margin-top:8px">
-				<select id="filterSelect" class="form-control">
-					<option>Food</option>
-					<option>Travel</option>
-					<option>Study</option>
-					<option>life</option>
-					<option>love</option>
+				<select id="filterSelect" class="form-control" onchange="reloadMarkers()">
+					<option>All</option>
+					<option>President</option>
+					<option>Hillary</option>
+					<option>Clinton</option>
+					<option>Trump</option>
+					<option>Google</option>
+					<option>Facebook</option>
+					<option>Columbia</option>
+					<option>NYC</option>
+					<option>Job</option>
+					<option>Love</option>
+					<option>Work</option>
 				</select>
 			</span>
 			<span style="float: right;margin-right: 1%;color:white;">Filter</span>
@@ -25,40 +32,76 @@
 	<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
 	<script  type="text/javascript">
 		var myMap;
-		$(document).ready(function(){
-			$("#filterSelect").change(function(){
-				$.post("Keyword",
-				{
-					keyword:$("#filterSelect").val()
-				},
-				function(data){
-					var loc = eval(data);
+        var markerCluster;
+        var lastCount = 0;
+		
+		window.onload=function(){
+			reloadMarkers();
+		}
+		
+		function reloadMarkers(){
+			$.post("Keyword",
+			{
+				keyword:$("#filterSelect").val()
+			},
+			function(data){
+				var loc = eval(data);
+				var locations = new Array(loc.length);
+				lastCount = loc.length;
+				for(var i = 0;i < loc.length;i++){
+					var tweet = loc[i];
+					locations[i] = new google.maps.LatLng(tweet.latitude,tweet.longitude);
+				}
+				addMarker(locations);
+			});
+		}
+		
+		function initMap() {
+	        myMap = new google.maps.Map(document.getElementById('map'), {
+	          zoom: 3,
+	          center: {lat: 40, lng: -100},
+	          mapTypeId: google.maps.MapTypeId.TERREN
+	        });	       
+	     }
+		
+		function addMarker(locations){
+			if(markerCluster != null){
+				markerCluster.clearMarkers();
+			}
+			
+			var markers = locations.map(function(location, i) {
+		          return new google.maps.Marker({
+		            position: location,
+		            label: '1',
+		            animation: google.maps.Animation.DROP
+		          });
+		     });
+
+		      // Add a marker clusterer to manage the markers.
+		      markerCluster = new MarkerClusterer(myMap, markers,
+		          {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'}
+		      );
+		}
+		
+		setInterval(function(){
+			$.post("Keyword",
+					{
+						keyword:$("#filterSelect").val()
+					},
+			function(data){
+				var loc = eval(data);
+				var locations = new Array(loc.length);
+				if(lastCount < loc.length){
 					for(var i = 0;i < loc.length;i++){
 						var tweet = loc[i];
-						addMarker(myMap,tweet.longitude,tweet.latitude);
+						locations[i] = new google.maps.LatLng(tweet.latitude,tweet.longitude);
 					}
-				});
+					addMarker(locations);
+				}
 			});
-		});
-		
-		
-		function myMap() {
-			var myCenter = new google.maps.LatLng(40,-100);
-			var mapCanvas = document.getElementById("map");
-			var mapOptions = {center: myCenter, zoom: 5};
-			myMap = new google.maps.Map(mapCanvas, mapOptions);	
-			addMarker(myMap,40,-100);	
-		}
-		
-		function addMarker(map,longitude,latitude){
-			var myCenter = new google.maps.LatLng(longitude,latitude);
-			var marker = new google.maps.Marker({
-				position:myCenter,
-			});
-			marker.setMap(myMap);
-		}
+		 },10000);
 	</script>
-	
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjxHGCl5uN2DPCMVaRttY0BeIaMFV-xM4&callback=myMap"></script>
+	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjxHGCl5uN2DPCMVaRttY0BeIaMFV-xM4&callback=initMap"></script>
 </body>
 </html>
