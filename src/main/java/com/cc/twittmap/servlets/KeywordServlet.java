@@ -31,7 +31,6 @@ public class KeywordServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
 	public void init(){
-		System.out.println("Start");
 		Thread t = new Thread(new FetchTwittsThread());
 		t.start();
 	}
@@ -61,22 +60,34 @@ public class KeywordServlet extends HttpServlet {
 		
 		TransportClient client = TransportClient.builder().build()
 		        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
-		SearchResponse res = client.prepareSearch("twitter")
-				.setTypes("tweet")
-		        .setQuery(QueryBuilders.termQuery("text", keyword))               
-		        .execute()
-		        .actionGet();
+		SearchResponse res;
+		if(keyword.equals("All")){
+			res = client.prepareSearch("twitter")
+					.setTypes("tweet")
+			        .setQuery(QueryBuilders.matchAllQuery())
+			        .setSize(10000)
+			        .execute()
+			        .actionGet();
+		}else{
+			res = client.prepareSearch("twitter")
+					.setTypes("tweet")
+			        .setQuery(QueryBuilders.queryStringQuery(keyword))
+			        .setSize(10000)
+			        .execute()
+			        .actionGet();
+		}
 
 		List<Tweet> tweetList = new ArrayList<Tweet>();
 		SearchHit[] hits = res.getHits().getHits();
+		System.out.println(keyword);
 		System.out.println(hits.length);
 		for(int i = 0;i < hits.length;i++){
 			Tweet t = new Tweet();
-			t.setUser(hits[i].getFields().get("user").getName());
-			t.setText(hits[i].getFields().get("text").getName());
-			t.setLongitude(Float.parseFloat(hits[i].getFields().get("longitude").getName()));
-			t.setLatitude(Float.parseFloat(hits[i].getFields().get("latitude").getName()));
-			t.setTime(hits[i].getFields().get("time").getName());
+			t.setUser(hits[i].getSource().get("user").toString());
+			t.setText(hits[i].getSource().get("text").toString());
+			t.setLongitude(Float.parseFloat(hits[i].getSource().get("longitude").toString()));
+			t.setLatitude(Float.parseFloat(hits[i].getSource().get("latitude").toString()));
+			t.setTime(hits[i].getSource().get("time").toString());
 			tweetList.add(t);
 		}
 	
