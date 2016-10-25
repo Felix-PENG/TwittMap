@@ -3,6 +3,9 @@
 <head>
 	<title>TwittMap</title>
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+	<style>
+	html,body {width: 100%;height:100%;}
+	</style>
 </head>
 <body style="margin: 0%;font-family: 'Comic Sans MS', 'Comic Sans', cursive;">
 	<div>
@@ -26,14 +29,13 @@
 			</span>
 			<span style="float: right;margin-right: 1%;color:white;">Filter</span>
 		</div>
-		<div id="map" style="width:100%;height:580px;"></div>
+		<div id="map" style="width:100%;height: calc(100% - 50px);"></div>
 	</div>
 	
 	<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
 	<script  type="text/javascript">
 		var myMap;
         var markerCluster;
-        var lastCount = 0;
 		
 		window.onload=function(){
 			reloadMarkers();
@@ -84,22 +86,8 @@
 		}
 		
 		setInterval(function(){
-			$.post("Keyword",
-					{
-						keyword:$("#filterSelect").val()
-					},
-			function(data){
-				var loc = eval(data);
-				var locations = new Array(loc.length);
-				if(lastCount < loc.length){
-					for(var i = 0;i < loc.length;i++){
-						var tweet = loc[i];
-						locations[i] = new google.maps.LatLng(tweet.latitude,tweet.longitude);
-					}
-					addMarker(locations);
-				}
-			});
-		 },10000);
+			reloadMarkers();
+		 },8000);
 	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjxHGCl5uN2DPCMVaRttY0BeIaMFV-xM4&callback=initMap"></script>
