@@ -36,26 +36,62 @@
 	<script  type="text/javascript">
 		var myMap;
         var markerCluster;
+        var lastKeyword = "All";
+        var dict = []; 
 		
 		window.onload=function(){
 			reloadMarkers();
+			dict['All'] = null;
+			dict['President'] = null;
+			dict['Hillary'] = null;
+			dict['Clinton'] = null;
+			dict['Trump'] = null;
+			dict['Google'] = null;
+			dict['Facebook'] = null;
+			dict['Columbia'] = null;
+			dict['NYC'] = null;
+			dict['Job'] = null;
+			dict['Love'] = null;
+			dict['Work'] = null;
 		}
 		
 		function reloadMarkers(){
-			$.post("Keyword",
-			{
-				keyword:$("#filterSelect").val()
-			},
-			function(data){
-				var loc = eval(data);
-				var locations = new Array(loc.length);
-				lastCount = loc.length;
-				for(var i = 0;i < loc.length;i++){
+			var keyword = $("#filterSelect").val()
+			if(dict[keyword] != null){
+				//render map with cache data
+				addMarker(dict[keyword]);
+				//fetch real time data in backend
+				$.post("Keyword",
+				{
+					keyword: keyword
+				},
+				function(data){
+					var loc = eval(data);
+					var locations = new Array(loc.length);
+					for(var i = 0;i < loc.length;i++){
+						var tweet = loc[i];
+						locations[i] = new google.maps.LatLng(tweet.latitude,tweet.longitude);
+					}
+					dict[keyword] = locations;	
+				});
+			}else{
+				$.post("Keyword",
+				{
+					keyword: keyword
+				},
+				function(data){
+					var loc = eval(data);
+					var locations = new Array(loc.length);
+					for(var i = 0;i < loc.length;i++){
 					var tweet = loc[i];
-					locations[i] = new google.maps.LatLng(tweet.latitude,tweet.longitude);
-				}
-				addMarker(locations);
-			});
+						locations[i] = new google.maps.LatLng(tweet.latitude,tweet.longitude);
+					}
+					dict[keyword] = locations;
+					if(keyword == $("#filterSelect").val()){
+						addMarker(locations);
+					}
+				});
+			}
 		}
 		
 		function initMap() {
@@ -86,7 +122,11 @@
 		}
 		
 		setInterval(function(){
-			reloadMarkers();
+			var keyword = $("#filterSelect").val()
+			if(keyword == lastKeyword){
+				reloadMarkers();
+			}
+			lastKeyword = keyword;
 		 },8000);
 	</script>
 	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
